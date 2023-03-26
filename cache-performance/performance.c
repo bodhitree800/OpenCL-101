@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
           11. argc[11] gpu_rum_num
          *********************************/
         len_a = atoi( argv[1] );
+        data_size_a = len_a * sizeof(ELEM_TYPE);
 
         strcpy(kernel_file, argv[2]);
         strcpy(kernel_func, argv[3]);
@@ -124,6 +125,8 @@ int main(int argc, char *argv[]) {
         // execution times for gpu and cpu
         cpu_run_times = atoi( argv[10] );
         gpu_run_times = atoi( argv[11] );
+
+        printf("%d len_a\n", len_a);
     }
     else {
         printf(">>> [USAGE] %s A_LEN \\\n", argv[0]);
@@ -143,6 +146,7 @@ int main(int argc, char *argv[]) {
     cl_program       program = NULL;
 
     sum_duration = 0.0;
+    a = (ELEM_TYPE*)malloc(len_a * sizeof(ELEM_TYPE));
 
     for (int ridx = 0; ridx < (gpu_run_times+1); ridx++) {
 
@@ -159,6 +163,7 @@ int main(int argc, char *argv[]) {
         status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&a_buffer);
         checkErr(status, "clSetKernelArg() for benchmark");
 
+        printf("global work size %d local work size %d\n", global_work_size[0,0,0], local_work_size[0,0,0]);
 
         gettimeofday(&start, NULL);
         // run kernel
@@ -195,6 +200,8 @@ int main(int argc, char *argv[]) {
                 0, 
                 NULL, 
                 NULL);
+
+
 #ifndef DONT_PRINT_MATRIX_FLAG
         printf("a:\n");
         print_mat(a, len_a, 1);
@@ -208,8 +215,9 @@ error:
         status = clReleaseKernel(kernel);
         status = clReleaseMemObject(a_buffer);
     }
+
     ave_duration = sum_duration / (double)gpu_run_times;
-    gflops = 2.0 * 100000 * len_a;
+    gflops = 2.0 * 10* 1000 * len_a;
     gflops = gflops / ave_duration * 1.0e-9;
     gbps = 0;
     printf(">>> [INFO] %s %d %2.6lf sec %2.6lf GFLOPS\n\n", 
@@ -218,4 +226,45 @@ error:
             ave_duration, 
             gflops);
 
+    cpu_calc();
+}
+
+
+void cpu_calc() 
+{
+    float a;
+    float v = 1.3999447f;
+    float w = 1.555444f;
+
+    float c0 = 0.5f;
+    float c1 = 0.7f;
+    float c2 = 0.6f;
+    float c3 = 0.77f;
+    float c4 = 0.55f;
+    float c5 = 0.44f;
+    float c6 = 0.32f;
+    float c7 = 0.23f;
+    float c8 = 0.12f;
+    float c9 = 0.43f;
+
+    int i = 0;
+    for (i = 0; i < 1000; i++) {
+        int j = 0;
+        for(j = 0; j < 10; j++) {
+            c0 = v * w + c0;
+            c1 = v * w + c1;
+            c2 = v * w + c2;
+            c3 = v * w + c3;
+            c4 = v * w + c4; 
+            c5 = v * w + c5;
+            c6 = v * w + c6;
+            c7 = v * w + c7;
+            c8 = v * w + c8;
+            c9 = v * w + c9; 
+        }
+    }
+
+    a = c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9;
+
+    printf("cpu calc result is %f\n", a);
 }

@@ -46,7 +46,7 @@ void rand_mat(ELEM_TYPE *mat, int len, int range) {
 void print_mat(ELEM_TYPE *mat, int width, int height) {
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++)
-                printf("%.2f ", (float)mat[r*width+c]);
+                printf("%f ", (float)mat[r*width+c]);
         printf("\n");
     }
     printf("\n");
