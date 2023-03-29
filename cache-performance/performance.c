@@ -63,12 +63,14 @@
 /*================= EXECUTION MODE ====================*/
 #define     BENCHMARK
 #define     PRINT_EACH_BENCHMARK
-#define     DONT_PRINT_MATRIX_FLAG
+// #define     DONT_PRINT_MATRIX_FLAG
 #define     BENCHMARK_SKIP_TIMES             (1)
 
 /*================= USER DEFINITION LIB ===============*/
 #include "../common/CLutil.h"
 #include "../common/matop.h"
+
+const int count = 1024;
 
 int main(int argc, char *argv[]) {
 
@@ -114,19 +116,19 @@ int main(int argc, char *argv[]) {
         strcpy(kernel_file, argv[2]);
         strcpy(kernel_func, argv[3]);
 
-        global_work_size[0] = atoi( argv[5] ); // global_work_size[1]
-        global_work_size[1] = atoi( argv[4] ); // global_work_size[0]
+        global_work_size[0] = atoi( argv[4] ); // global_work_size[1]
+        global_work_size[1] = atoi( argv[5] ); // global_work_size[0]
         global_work_size[2] = atoi( argv[6] ); // default: 1
 
-        local_work_size[0] = atoi( argv[8] );
-        local_work_size[1] = atoi( argv[7] );
+        local_work_size[0] = atoi( argv[7] );
+        local_work_size[1] = atoi( argv[8] );
         local_work_size[2] = atoi( argv[9] );
 
         // execution times for gpu and cpu
         cpu_run_times = atoi( argv[10] );
         gpu_run_times = atoi( argv[11] );
 
-        printf("%d len_a\n", len_a);
+        printf("len_a %d, count %d\n", len_a, count);
     }
     else {
         printf(">>> [USAGE] %s A_LEN \\\n", argv[0]);
@@ -163,7 +165,7 @@ int main(int argc, char *argv[]) {
         status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&a_buffer);
         checkErr(status, "clSetKernelArg() for benchmark");
 
-        printf("global work size %d local work size %d\n", global_work_size[0,0,0], local_work_size[0,0,0]);
+        // printf("global work size %d local work size %d\n", global_work_size[0,0,0], local_work_size[0,0,0]);
 
         gettimeofday(&start, NULL);
         // run kernel
@@ -182,7 +184,7 @@ int main(int argc, char *argv[]) {
         duration = ((double)(end.tv_sec-start.tv_sec) +
                 (double)(end.tv_usec-start.tv_usec)/1000000);
 #ifndef DONT_PRINT_EACH_BENCHMARK
-        printf("%d \t %.6f\n", ridx, duration);
+        printf("\n%d \t %.6f\n", ridx, duration);
 #endif // DONT_PRINT_EACH_BENCHMARK
         if (ridx < BENCHMARK_SKIP_TIMES) {
             //printf(">>> [INFO] skip first %d time(s)\n", BENCHMARK_SKIP_TIMES);
@@ -202,11 +204,6 @@ int main(int argc, char *argv[]) {
                 NULL);
 
 
-#ifndef DONT_PRINT_MATRIX_FLAG
-        printf("a:\n");
-        print_mat(a, len_a, 1);
-#endif // DONT_PRINT_MATRIX_FLAG
-
 error:
         /* clean openCL resources */
         status = clReleaseCommandQueue(command_queue);
@@ -216,8 +213,13 @@ error:
         status = clReleaseMemObject(a_buffer);
     }
 
+#ifndef DONT_PRINT_MATRIX_FLAG
+        printf("a:\n");
+        print_mat(a, len_a, 1);
+#endif // DONT_PRINT_MATRIX_FLAG
+
     ave_duration = sum_duration / (double)gpu_run_times;
-    gflops = 2.0 * 10* 1000 * len_a;
+    gflops = 2.0 * 10* 1000 * count * len_a;
     gflops = gflops / ave_duration * 1.0e-9;
     gbps = 0;
     printf(">>> [INFO] %s %d %2.6lf sec %2.6lf GFLOPS\n\n", 
@@ -232,39 +234,98 @@ error:
 
 void cpu_calc() 
 {
-    float a;
-    float v = 1.3999447f;
-    float w = 1.555444f;
+    float v = 1.3999445323257f;
+    float w = 0.00055445354f;
+   
+    // float c[50] = {
+    //     0.512323f, 
+    //     0.743244323f, 
+    //     0.643323234f, 
+    //     0.7654665477f,
+    //     0.554343436f,
+    //     0.446646646f,
+    //     0.328588758f,
+    //     0.254543433f,
+    //     0.164344343f,
+    //     0.464346436f,
+    //     0.512323f, 
+    //     0.743244323f, 
+    //     0.643323234f, 
+    //     0.7654665477f,
+    //     0.554343436f,
+    //     0.446646646f,
+    //     0.328588758f,
+    //     0.254543433f,
+    //     0.164344343f,
+    //     0.464346436f,
+    //     0.512323f, 
+    //     0.743244323f, 
+    //     0.643323234f, 
+    //     0.7654665477f,
+    //     0.554343436f,
+    //     0.446646646f,
+    //     0.328588758f,
+    //     0.254543433f,
+    //     0.164344343f,
+    //     0.464346436f,
 
-    float c0 = 0.5f;
-    float c1 = 0.7f;
-    float c2 = 0.6f;
-    float c3 = 0.77f;
-    float c4 = 0.55f;
-    float c5 = 0.44f;
-    float c6 = 0.32f;
-    float c7 = 0.23f;
-    float c8 = 0.12f;
-    float c9 = 0.43f;
+    //     0.512323f, 
+    //     0.743244323f, 
+    //     0.643323234f, 
+    //     0.7654665477f,
+    //     0.554343436f,
+    //     0.446646646f,
+    //     0.328588758f,
+    //     0.254543433f,
+    //     0.164344343f,
+    //     0.464346436f,
+    //     0.512323f, 
+    //     0.743244323f, 
+    //     0.643323234f, 
+    //     0.7654665477f,
+    //     0.554343436f,
+    //     0.446646646f,
+    //     0.328588758f,
+    //     0.254543433f,
+    //     0.164344343f,
+    //     0.464346436f,
+
+    // };
+
+    float c[count];    
+    for(int i = 0; i < count; i++)
+    {
+        c[i] = 0.01 * i;
+    }
+
+    // int i = 0;
+    // for (i = 0; i < 1000; i++) {
+    //     int j = 0;
+    //     for(j = 0; j < 10; j++) {
+            
+    //         c[0] = fma(v, w, c[0]);
+    //         int k;
+    //         for(k = 0; k < count - 1; k++)
+    //         {
+    //             c[k+1] = fma(c[k], w, c[k+1]);
+    //             // c[k+1] = c[k] * w + c[k+1]);
+    //             // printf("%f ", c[k+1]);
+    //         }           
+    //     }
+    // }
+
+    float sum = 0.0;
 
     int i = 0;
     for (i = 0; i < 1000; i++) {
         int j = 0;
         for(j = 0; j < 10; j++) {
-            c0 = v * w + c0;
-            c1 = v * w + c1;
-            c2 = v * w + c2;
-            c3 = v * w + c3;
-            c4 = v * w + c4; 
-            c5 = v * w + c5;
-            c6 = v * w + c6;
-            c7 = v * w + c7;
-            c8 = v * w + c8;
-            c9 = v * w + c9; 
+            for(int k = 0; k < count; k++)
+            {
+                sum += v * c[k] + w ;
+            }
         }
     }
 
-    a = c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9;
-
-    printf("cpu calc result is %f\n", a);
+    printf("cpu calc result is %f\n", sum);
 }
